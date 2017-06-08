@@ -4,7 +4,7 @@ namespace BasicScanning.Core
 {
     public class MainViewModel : MvxViewModel
     {
-        private readonly IScannerInterface _scannerInterface;
+        private readonly IScannerService _scannerService;
         private string _status;
         private string _data;
         private bool _statusIsFocused;
@@ -35,15 +35,19 @@ namespace BasicScanning.Core
         }
 
 
-        public MainViewModel(IScannerInterface scannerInterface)
+        public MainViewModel(IScannerService scannerService)
         {
-            _scannerInterface = scannerInterface;
+            _scannerService = scannerService;
 
-            _scannerInterface.ScannerStatusChanged += (sender, args) => { Status = args.Status; };
-
-            _scannerInterface.ScannerDataChanged += (sender, args) =>
+            _scannerService.ScannerStatusChanged += (sender, args) =>
             {
-                if (DataIsFocused) Data = args.Data;
+                Status = args.Status;
+            };
+
+            _scannerService.ScannerDataChanged += (sender, args) =>
+            {
+                if (DataIsFocused)
+                    Data = args.Data;
             };
         }
     }

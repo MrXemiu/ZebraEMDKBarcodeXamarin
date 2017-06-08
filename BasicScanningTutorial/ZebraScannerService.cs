@@ -11,7 +11,7 @@ using Symbol.XamarinEMDK.Barcode;
 
 namespace BasicScanningTutorial
 {
-    public class ZebraScannerService : EMDKManager.IEMDKListener, IScannerInterface
+    public class ZebraScannerService : EMDKManager.IEMDKListener, IScannerService
     {
         private EMDKManager _emdkManager;
         private BarcodeManager _barcodeManager;

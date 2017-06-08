@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasicScanning.Core
 {
-    public interface IScannerInterface
+    public interface IScannerService
     {
         event EventHandler<ScannerStatusEventArgs> ScannerStatusChanged;
 
