@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Android.App;
+using Android.OS;
 using BasicScanning.Core;
 using MvvmCross.Core.Platform;
 using MvvmCross.Droid.Platform;
@@ -13,6 +14,7 @@ namespace BasicScanningTutorial
 {
     public class ZebraScannerService : EMDKManager.IEMDKListener, IScannerService
     {
+        private readonly IMvxAndroidCurrentTopActivity _currentTopActivity;
         private EMDKManager _emdkManager;
         private BarcodeManager _barcodeManager;
         private Scanner _scanner;
@@ -26,27 +28,37 @@ namespace BasicScanningTutorial
 
         public ZebraScannerService(IMvxAndroidActivityLifetimeListener activityLifetimeListener, IMvxAndroidCurrentTopActivity currentTopActivity)
         {
+            _currentTopActivity = currentTopActivity;
+
             EMDKResults results = EMDKManager.GetEMDKManager(Application.Context, this);
-            ScannerStatusChanged?.Invoke(this, results.StatusCode != EMDKResults.STATUS_CODE.Success ? new ScannerStatusEventArgs("EMDKManager object creation failed.") : new ScannerStatusEventArgs("EMDKManager object creation succeeded."));
 
+            if (results.StatusCode != EMDKResults.STATUS_CODE.Success)
+            {
+                DisplayStatus(new ScannerStatusEventArgs("EMDKManager object creation failed."));
+            }
+            else
+            {
+                DisplayStatus(new ScannerStatusEventArgs("EMDKManager object creation succeeded."));
+            }
+          
             ((MvxLifetimeMonitor)activityLifetimeListener).LifetimeChanged += (sender, args) =>
-           {
-               switch (args.LifetimeEvent)
-               {
-                   case MvxLifetimeEvent.Launching:
-                       Debugger.Break();
-                       break;
+            {
+                switch (args.LifetimeEvent)
+                {
+                    case MvxLifetimeEvent.Launching:
+                        Debugger.Break();
+                        break;
 
-                   case MvxLifetimeEvent.Closing:
-                       Debugger.Break();
-                       break;
+                    case MvxLifetimeEvent.Closing:
+                        Debugger.Break();
+                        break;
 
-                   case MvxLifetimeEvent.Deactivated:
-                       Debugger.Break();
-                       break;
-               }
+                    case MvxLifetimeEvent.Deactivated:
+                        Debugger.Break();
+                        break;
+                }
                ;
-           };
+            };
         }
 
 
@@ -54,7 +66,7 @@ namespace BasicScanningTutorial
         {
             DeInitScanner();
         }
-        
+
 
         public void OnResume()
         {
@@ -76,7 +88,7 @@ namespace BasicScanningTutorial
         /// <inheritdoc />
         public void OnClosed()
         {
-            ScannerStatusChanged?.Invoke(this, new ScannerStatusEventArgs("EMDK Open() failed unexpectedly."));
+            DisplayStatus(new ScannerStatusEventArgs("EMDK Open() failed unexpectedly."));
             Dispose();
         }
 
@@ -84,7 +96,7 @@ namespace BasicScanningTutorial
         /// <inheritdoc />
         public void OnOpened(EMDKManager emdkManager)
         {
-            ScannerStatusChanged?.Invoke(this, new ScannerStatusEventArgs("Status:  EMDK Open() succeeded."));
+            DisplayStatus(new ScannerStatusEventArgs("Status:  EMDK Open() succeeded."));
 
             _emdkManager = emdkManager;
 
@@ -118,12 +130,12 @@ namespace BasicScanningTutorial
                 }
                 else
                 {
-                    ScannerStatusChanged?.Invoke(this, new ScannerStatusEventArgs("Failed to enable scanner.\n"));
+                    DisplayStatus(new ScannerStatusEventArgs("Failed to enable scanner.\n"));
                 }
             }
             catch (Exception ex)
             {
-                ScannerStatusChanged?.Invoke(this, new ScannerStatusEventArgs("Error: " + ex.Message));
+                DisplayStatus(new ScannerStatusEventArgs("Error: " + ex.Message));
             }
         }
 
@@ -138,7 +150,7 @@ namespace BasicScanningTutorial
 
             foreach (var data in scanData)
             {
-                ScannerDataChanged?.Invoke(this, new ScannerDataEventArgs(LabelDictionary[data.LabelType], data.Data));
+                DisplayData(new ScannerDataEventArgs(LabelDictionary[data.LabelType], data.Data));
             }
         }
 
@@ -173,7 +185,7 @@ namespace BasicScanningTutorial
 
             if (state == StatusData.ScannerStates.Error) statusStr = "Error occured during scanning.";
 
-            ScannerStatusChanged?.Invoke(this, new ScannerStatusEventArgs(statusStr));
+            DisplayStatus(new ScannerStatusEventArgs(statusStr));
         }
 
 
@@ -196,6 +208,30 @@ namespace BasicScanningTutorial
 
                 _barcodeManager = null;
                 _scanner = null;
+            }
+        }
+
+        private void DisplayStatus(ScannerStatusEventArgs eventArgs)
+        {
+            if (Looper.MainLooper.Thread == Java.Lang.Thread.CurrentThread())
+            {
+                ScannerStatusChanged?.Invoke(this, eventArgs);
+            }
+            else
+            {
+               _currentTopActivity.Activity.RunOnUiThread(() => ScannerStatusChanged?.Invoke(this, eventArgs));
+            }
+        }
+
+        private void DisplayData(ScannerDataEventArgs eventArgs)
+        {
+            if (Looper.MainLooper.Thread == Java.Lang.Thread.CurrentThread())
+            {
+                ScannerDataChanged?.Invoke(this, eventArgs);
+            }
+            else
+            {
+                _currentTopActivity.Activity.RunOnUiThread(() => ScannerDataChanged?.Invoke(this, eventArgs));
             }
         }
 

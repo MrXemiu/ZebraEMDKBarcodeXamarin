@@ -1,4 +1,5 @@
 ﻿using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform.WeakSubscription;
 
 namespace BasicScanning.Core
 {
@@ -9,6 +10,8 @@ namespace BasicScanning.Core
         private string _data;
         private bool _statusIsFocused;
         private bool _dataIsFocused;
+        private MvxWeakEventSubscription<IScannerService, ScannerDataEventArgs> _dataToken;
+        private MvxWeakEventSubscription<IScannerService, ScannerStatusEventArgs> _statusToken;
 
         public string Status
         {
@@ -39,16 +42,27 @@ namespace BasicScanning.Core
         {
             _scannerService = scannerService;
 
-            _scannerService.ScannerStatusChanged += (sender, args) =>
+           _dataToken = _scannerService.WeakSubscribe<IScannerService, ScannerDataEventArgs>(nameof(IScannerService.ScannerDataChanged), (sender, args) =>
+             {
+                 if (DataIsFocused)
+                     Data = args.Data;
+             });
+
+            _statusToken = _scannerService.WeakSubscribe<IScannerService, ScannerStatusEventArgs>(nameof(IScannerService.ScannerStatusChanged), (sender, args) =>
             {
                 Status = args.Status;
-            };
+            });
 
-            _scannerService.ScannerDataChanged += (sender, args) =>
-            {
-                if (DataIsFocused)
-                    Data = args.Data;
-            };
+            //_scannerService.ScannerStatusChanged += (sender, args) =>
+            //{
+            //    Status = args.Status;
+            //};
+
+            //_scannerService.ScannerDataChanged += (sender, args) =>
+            //{
+            //    if (DataIsFocused)
+            //        Data = args.Data;
+            //};
         }
     }
 }
