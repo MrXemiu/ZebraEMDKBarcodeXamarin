@@ -12,14 +12,12 @@ using Symbol.XamarinEMDK.Barcode;
 
 namespace BasicScanningTutorial
 {
-    public class ZebraScannerService : EMDKManager.IEMDKListener, IScannerService
+    public class ZebraScannerService : Java.Lang.Object, EMDKManager.IEMDKListener, IScannerService
     {
         private readonly IMvxAndroidCurrentTopActivity _currentTopActivity;
         private EMDKManager _emdkManager;
         private BarcodeManager _barcodeManager;
         private Scanner _scanner;
-
-        public IntPtr Handle { get; }
 
         public event EventHandler<ScannerStatusEventArgs> ScannerStatusChanged;
 
@@ -30,7 +28,9 @@ namespace BasicScanningTutorial
         {
             _currentTopActivity = currentTopActivity;
 
-            EMDKResults results = EMDKManager.GetEMDKManager(Application.Context, this);
+            EMDKResults results = EMDKManager.GetEMDKManager(Application.Context.ApplicationContext, this);
+            
+            Console.WriteLine($"GetEMDKManager status: {results.StatusCode} - {results.StatusString}.  ");
 
             if (results.StatusCode != EMDKResults.STATUS_CODE.Success)
             {

@@ -64,5 +64,13 @@ namespace BasicScanning.Core
             //        Data = args.Data;
             //};
         }
+
+
+        /// <inheritdoc />
+        public override void Appearing()
+        {
+            base.Appearing();
+            DataIsFocused = true;
+        }
     }
 }

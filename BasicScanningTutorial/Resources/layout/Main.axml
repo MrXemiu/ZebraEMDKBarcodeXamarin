@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/statusViewTitle"
         android:id="@+id/statusView"
-        app:MvxBind="Text Status" />
+        app:MvxBind="Text Status, Mode=OneWay" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
