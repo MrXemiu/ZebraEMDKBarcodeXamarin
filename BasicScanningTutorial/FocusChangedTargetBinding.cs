@@ -6,14 +6,22 @@ namespace BasicScanningTutorial
 {
     public class FocusChangedTargetBinding : MvxAndroidTargetBinding<View, bool>
     {
+        #region Private Fields
+
         private MvxAndroidTargetEventSubscription<View, View.FocusChangeEventArgs> _subscription;
 
+        #endregion Private Fields
+
+        #region Public Constructors
 
         /// <inheritdoc />
         public FocusChangedTargetBinding(View target) : base(target)
         {
         }
 
+        #endregion Public Constructors
+
+        #region Public Methods
 
         /// <inheritdoc />
         public override void SubscribeToEvents()
@@ -23,14 +31,9 @@ namespace BasicScanningTutorial
             _subscription = Target.WeakSubscribe<View, View.FocusChangeEventArgs>(nameof(Target.FocusChange), HandleFocusChanged);
         }
 
+        #endregion Public Methods
 
-        private void HandleFocusChanged(object sender, View.FocusChangeEventArgs e)
-        {
-            if (Target == null) return;
-
-            FireValueChanged(e.HasFocus);
-        }
-
+        #region Protected Methods
 
         /// <inheritdoc />
         protected override void SetValueImpl(View target, bool value)
@@ -40,5 +43,18 @@ namespace BasicScanningTutorial
             if (value) target.RequestFocus();
             else target.ClearFocus();
         }
+
+        #endregion Protected Methods
+
+        #region Private Methods
+
+        private void HandleFocusChanged(object sender, View.FocusChangeEventArgs e)
+        {
+            if (Target == null) return;
+
+            FireValueChanged(e.HasFocus);
+        }
+
+        #endregion Private Methods
     }
 }

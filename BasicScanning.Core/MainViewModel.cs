@@ -5,6 +5,8 @@ namespace BasicScanning.Core
 {
     public class MainViewModel : MvxViewModel
     {
+        #region Private Fields
+
         private readonly IScannerService _scannerService;
         private string _status;
         private string _data;
@@ -12,6 +14,10 @@ namespace BasicScanning.Core
         private bool _dataIsFocused;
         private MvxWeakEventSubscription<IScannerService, ScannerDataEventArgs> _dataToken;
         private MvxWeakEventSubscription<IScannerService, ScannerStatusEventArgs> _statusToken;
+
+        #endregion Private Fields
+
+        #region Public Properties
 
         public string Status
         {
@@ -37,6 +43,9 @@ namespace BasicScanning.Core
             set => SetProperty(ref _dataIsFocused, value);
         }
 
+        #endregion Public Properties
+
+        #region Public Constructors
 
         public MainViewModel(IScannerService scannerService)
         {
@@ -53,6 +62,9 @@ namespace BasicScanning.Core
             });
         }
 
+        #endregion Public Constructors
+
+        #region Public Methods
 
         /// <inheritdoc />
         public override void Appearing()
@@ -60,5 +72,7 @@ namespace BasicScanning.Core
             base.Appearing();
             DataIsFocused = true;
         }
+
+        #endregion Public Methods
     }
 }

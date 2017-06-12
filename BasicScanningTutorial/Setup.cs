@@ -1,24 +1,25 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Android.Views;
 using Autofac;
 using Autofac.Extras.MvvmCross;
 using BasicScanning.Core;
-using Java.Lang;
 using MvvmCross.Binding.Bindings.Target.Construction;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Droid.Platform;
-using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
-using Symbol.XamarinEMDK;
 
 namespace BasicScanningTutorial
 {
     public class Setup : MvxAndroidSetup
     {
+        #region Public Constructors
+
         /// <inheritdoc />
         public Setup(Context applicationContext) : base(applicationContext) { }
 
+        #endregion Public Constructors
+
+        #region Protected Methods
 
         /// <inheritdoc />
         protected override IMvxApplication CreateApp()
@@ -32,7 +33,6 @@ namespace BasicScanningTutorial
             base.FillTargetFactories(registry);
         }
 
-
         /// <inheritdoc />
         protected override IMvxIoCProvider CreateIocProvider()
         {
@@ -44,18 +44,16 @@ namespace BasicScanningTutorial
             return new AutofacMvxIocProvider(container);
         }
 
+        #endregion Protected Methods
+
+        #region Private Methods
 
         private static void RegisterScannerService(ContainerBuilder builder)
         {
-            try
-            {
-                if (Class.ForName("com.symbol.emdk.VersionManager") != null)
-                    builder.RegisterType<ZebraScannerService>().As<IScannerService>().SingleInstance();
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"No classes for 'VersionManager' were found, infering non-Zebra environment.");
-            }
+            if (ZebraScannerService.IsSupported())
+                builder.RegisterType<ZebraScannerService>().As<IScannerService>().SingleInstance();
         }
+
+        #endregion Private Methods
     }
 }

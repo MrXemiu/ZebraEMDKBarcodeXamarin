@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BasicScanning.Core
+﻿namespace BasicScanning.Core
 {
     public class ScannerStatusEventArgs
     {
-       public string Status { get; }
+        #region Public Properties
 
+        public string Status { get; }
+
+        #endregion Public Properties
+
+        #region Public Constructors
 
         public ScannerStatusEventArgs(string status)
         {
             Status = status;
         }
+
+        #endregion Public Constructors
     }
 }
