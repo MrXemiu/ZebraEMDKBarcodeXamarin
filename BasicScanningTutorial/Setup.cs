@@ -1,8 +1,10 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using Android.Views;
 using Autofac;
 using Autofac.Extras.MvvmCross;
 using BasicScanning.Core;
+using Java.Lang;
 using MvvmCross.Binding.Bindings.Target.Construction;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Droid.Platform;
@@ -45,11 +47,14 @@ namespace BasicScanningTutorial
 
         private static void RegisterScannerService(ContainerBuilder builder)
         {
-            var zebraService = new ZebraScannerService();
-
-            if (zebraService.CurrentStatus == EMDKResults.STATUS_CODE.Success)
+            try
             {
-                builder.RegisterType<ZebraScannerService>().As<IScannerService>().SingleInstance();
+                if (Class.ForName("com.symbol.emdk.VersionManager") != null)
+                    builder.RegisterType<ZebraScannerService>().As<IScannerService>().SingleInstance();
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"No classes for 'VersionManager' were found, infering non-Zebra environment.");
             }
         }
     }
