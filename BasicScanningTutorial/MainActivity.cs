@@ -9,8 +9,6 @@ namespace BasicScanningTutorial
     [Activity(Label = "BasicScanningTutorial", MainLauncher = true, Icon = "@drawable/icon", WindowSoftInputMode = SoftInput.StateHidden)]
     public class MainActivity : MvxActivity<MainViewModel>
     {
-        private ZebraScannerService _scannerService;
-
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);

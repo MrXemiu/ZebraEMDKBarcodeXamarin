@@ -77,9 +77,6 @@
     <Reference Include="MvvmCross.Platform.Droid, Version=5.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmCross.Platform.5.0.2\lib\MonoAndroid\MvvmCross.Platform.Droid.dll</HintPath>
     </Reference>
-    <Reference Include="Symbol.XamarinEMDK">
-      <HintPath>..\Components\emdk-component-2.3.0.43\lib\android\Symbol.XamarinEMDK.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
@@ -93,7 +90,6 @@
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Setup.cs" />
-    <Compile Include="ZebraScannerService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -8,7 +8,6 @@ using MvvmCross.Core.ViewModels;
 using MvvmCross.Droid.Platform;
 using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
-using Symbol.XamarinEMDK;
 
 namespace BasicScanningTutorial
 {
@@ -35,22 +34,8 @@ namespace BasicScanningTutorial
         protected override IMvxIoCProvider CreateIocProvider()
         {
             var builder = new ContainerBuilder();
-
-            RegisterScannerService(builder);
-
             var container = builder.Build();
             return new AutofacMvxIocProvider(container);
-        }
-
-
-        private static void RegisterScannerService(ContainerBuilder builder)
-        {
-            var zebraService = new ZebraScannerService();
-
-            if (zebraService.CurrentStatus == EMDKResults.STATUS_CODE.Success)
-            {
-                builder.RegisterType<ZebraScannerService>().As<IScannerService>().SingleInstance();
-            }
         }
     }
 }

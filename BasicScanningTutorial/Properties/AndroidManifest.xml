@@ -3,6 +3,6 @@
   <uses-sdk android:minSdkVersion="19" />
   <uses-permission android:name="com.symbol.emdk.permission.EMDK" />
   <application android:label="BasicScanningTutorial">
-    <uses-library android:name="com.symbol.emdk" />
+    <uses-library android:name="com.symbol.emdk" android:required="false" />
   </application>
 </manifest>
