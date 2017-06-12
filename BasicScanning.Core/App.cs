@@ -13,6 +13,7 @@ namespace BasicScanning.Core
         public App()
         {
             Mvx.RegisterSingleton<IMvxAppStart>(new MvxAppStart<MainViewModel>());
+            Mvx.RegisterSingleton<IScannerService>(new NullScannerService());
         }
     }
 }

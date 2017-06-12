@@ -36,6 +36,7 @@
     <Compile Include="App.cs" />
     <Compile Include="IScannerService.cs" />
     <Compile Include="MainViewModel.cs" />
+    <Compile Include="NullScannerService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScannerDataEventArgs.cs" />
     <Compile Include="ScannerLabelType.cs" />

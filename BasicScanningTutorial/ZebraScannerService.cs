@@ -6,6 +6,7 @@ using Android.OS;
 using BasicScanning.Core;
 using MvvmCross.Core.Platform;
 using MvvmCross.Droid.Platform;
+using MvvmCross.Platform;
 using MvvmCross.Platform.Droid.Platform;
 using Symbol.XamarinEMDK;
 using Symbol.XamarinEMDK.Barcode;
@@ -14,25 +15,36 @@ namespace BasicScanningTutorial
 {
     public class ZebraScannerService : Java.Lang.Object, EMDKManager.IEMDKListener, IScannerService
     {
-        private readonly IMvxAndroidCurrentTopActivity _currentTopActivity;
         private EMDKManager _emdkManager;
-        private BarcodeManager _barcodeManager;
-        private Scanner _scanner;
+
+        private BarcodeManager BarcodeManager
+        {
+            get => _barcodeManager ?? (_barcodeManager =  _emdkManager.GetInstance(EMDKManager.FEATURE_TYPE.Barcode) as BarcodeManager);
+            set => _barcodeManager = value;
+        }
+
+        private Scanner Scanner
+        {
+            get => _scanner ?? (_scanner =  BarcodeManager.GetDevice(BarcodeManager.DeviceIdentifier.Default));
+            set => _scanner = value;
+        }
+
+        internal EMDKResults.STATUS_CODE CurrentStatus { get; set; }
 
         public event EventHandler<ScannerStatusEventArgs> ScannerStatusChanged;
 
         public event EventHandler<ScannerDataEventArgs> ScannerDataChanged;
 
 
-        public ZebraScannerService(IMvxAndroidActivityLifetimeListener activityLifetimeListener, IMvxAndroidCurrentTopActivity currentTopActivity)
+        public ZebraScannerService()
         {
-            _currentTopActivity = currentTopActivity;
-
             EMDKResults results = EMDKManager.GetEMDKManager(Application.Context.ApplicationContext, this);
+
+            CurrentStatus = results.StatusCode;
             
             Console.WriteLine($"GetEMDKManager status: {results.StatusCode} - {results.StatusString}.  ");
 
-            if (results.StatusCode != EMDKResults.STATUS_CODE.Success)
+            if (CurrentStatus != EMDKResults.STATUS_CODE.Success)
             {
                 DisplayStatus(new ScannerStatusEventArgs("EMDKManager object creation failed."));
             }
@@ -40,25 +52,6 @@ namespace BasicScanningTutorial
             {
                 DisplayStatus(new ScannerStatusEventArgs("EMDKManager object creation succeeded."));
             }
-          
-            ((MvxLifetimeMonitor)activityLifetimeListener).LifetimeChanged += (sender, args) =>
-            {
-                switch (args.LifetimeEvent)
-                {
-                    case MvxLifetimeEvent.Launching:
-                        Debugger.Break();
-                        break;
-
-                    case MvxLifetimeEvent.Closing:
-                        Debugger.Break();
-                        break;
-
-                    case MvxLifetimeEvent.Deactivated:
-                        Debugger.Break();
-                        break;
-                }
-               ;
-            };
         }
 
 
@@ -108,25 +101,24 @@ namespace BasicScanningTutorial
         {
             try
             {
-                _barcodeManager = (BarcodeManager)_emdkManager.GetInstance(EMDKManager.FEATURE_TYPE.Barcode);
-                _scanner = _barcodeManager.GetDevice(BarcodeManager.DeviceIdentifier.Default);
+                InitLifetimeEventHandling();
 
-                if (_scanner != null)
+                if (Scanner != null)
                 {
 
-                    _scanner.Data += Scanner_Data;
-                    _scanner.Status += Scanner_Status;
+                    Scanner.Data += Scanner_Data;
+                    Scanner.Status += Scanner_Status;
 
-                    _scanner.Enable();
+                    Scanner.Enable();
 
-                    var config = _scanner.GetConfig();
+                    var config = Scanner.GetConfig();
                     config.SkipOnUnsupported = ScannerConfig.SkipOnUnSupported.None;
                     config.ScanParams.DecodeLEDFeedback = true;
                     config.ReaderParams.ReaderSpecific.ImagerSpecific.PickList = ScannerConfig.PickList.Enabled;
                     config.DecoderParams.Code39.Enabled = true;
                     config.DecoderParams.Code128.Enabled = false;
 
-                    _scanner.SetConfig(config);
+                    Scanner.SetConfig(config);
                 }
                 else
                 {
@@ -137,6 +129,32 @@ namespace BasicScanningTutorial
             {
                 DisplayStatus(new ScannerStatusEventArgs("Error: " + ex.Message));
             }
+        }
+
+
+        private static void InitLifetimeEventHandling()
+        {
+            var activityLifetimeListener = Mvx.Resolve<IMvxAndroidActivityLifetimeListener>() as MvxLifetimeMonitor;
+
+            if (activityLifetimeListener != null)
+                activityLifetimeListener.LifetimeChanged += (sender, args) =>
+                {
+                    switch (args.LifetimeEvent)
+                    {
+                        case MvxLifetimeEvent.Launching:
+                            Debugger.Break();
+                            break;
+
+                        case MvxLifetimeEvent.Closing:
+                            Debugger.Break();
+                            break;
+
+                        case MvxLifetimeEvent.Deactivated:
+                            Debugger.Break();
+                            break;
+                    }
+                    ;
+                };
         }
 
 
@@ -166,9 +184,9 @@ namespace BasicScanningTutorial
                 statusStr = "Scanner is idle and ready to submit read.";
                 try
                 {
-                    if (_scanner.IsEnabled && !_scanner.IsReadPending)
+                    if (Scanner.IsEnabled && !Scanner.IsReadPending)
                     {
-                        _scanner.Read();
+                        Scanner.Read();
                     }
                 }
                 catch (ScannerException ex)
@@ -194,20 +212,20 @@ namespace BasicScanningTutorial
             if (_emdkManager != null)
             {
 
-                if (_scanner != null)
+                if (Scanner != null)
                 {
-                    _scanner.Data -= Scanner_Data;
-                    _scanner.Status -= Scanner_Status;
-                    _scanner.Disable();
+                    Scanner.Data -= Scanner_Data;
+                    Scanner.Status -= Scanner_Status;
+                    Scanner.Disable();
                 }
 
-                if (_barcodeManager != null)
+                if (BarcodeManager != null)
                 {
                     _emdkManager.Release(EMDKManager.FEATURE_TYPE.Barcode);
                 }
 
-                _barcodeManager = null;
-                _scanner = null;
+                BarcodeManager = null;
+                Scanner = null;
             }
         }
 
@@ -219,7 +237,7 @@ namespace BasicScanningTutorial
             }
             else
             {
-               _currentTopActivity.Activity.RunOnUiThread(() => ScannerStatusChanged?.Invoke(this, eventArgs));
+               Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity.RunOnUiThread(() => ScannerStatusChanged?.Invoke(this, eventArgs));
             }
         }
 
@@ -231,7 +249,7 @@ namespace BasicScanningTutorial
             }
             else
             {
-                _currentTopActivity.Activity.RunOnUiThread(() => ScannerDataChanged?.Invoke(this, eventArgs));
+                Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity.RunOnUiThread(() => ScannerDataChanged?.Invoke(this, eventArgs));
             }
         }
 
@@ -290,5 +308,8 @@ namespace BasicScanningTutorial
             {ScanDataCollection.LabelType.Usplanet, ScannerLabelType.USPLANET },
             {ScanDataCollection.LabelType.Uspostnet, ScannerLabelType.USPOSTNET }
         };
+
+        private BarcodeManager _barcodeManager;
+        private Scanner _scanner;
     }
 }
