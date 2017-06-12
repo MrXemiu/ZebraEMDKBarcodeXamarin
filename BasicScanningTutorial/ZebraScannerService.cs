@@ -159,13 +159,15 @@ namespace BasicScanningTutorial
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public new void Dispose()
         {
             if (_emdkManager != null)
             {
                 _emdkManager.Release();
                 _emdkManager = null;
             }
+
+            base.Dispose();
         }
 
         /// <inheritdoc />
